@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pygeoapi
+  namespace: {YOUR_NAMESPACE}
+  labels:
+    app: pygeoapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pygeoapi
+  template:
+    metadata:
+      labels:
+        app: pygeoapi
+    spec:
+      containers:
+        - name: pygeoapi
+          image: geopython/pygeoapi:latest # localhost:32000/pygeoapi:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: data
+              mountPath: /pygeoapi/local.config.yml
+              subPath: local.config.yml
+            - name: data
+              mountPath: /data
+
+      volumes:
+        - name: data
+          nfs:
+            server: 192.168.0.198
+            path: /cephfs/pygeoapi/{YOUR_NAMESPACE}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pygeoapi
+  namespace: {YOUR_NAMESPACE}
+  labels:
+    app: pygeoapi
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 80
+  selector:
+    app: pygeoapi
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: http-ingress-glodal-inc-net
+  namespace: {YOUR_NAMESPACE}
+  annotations:
+    cert-manager.io/cluster-issuer: "zerossl-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-passthrough: "false"
+    nginx.ingress.kubernetes.io/proxy-body-size: "0"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - {YOUR_NAMESPACE}-pygeoapi.glodal-inc.net
+    secretName: {YOUR_NAMESPACE}-pygeoapi.glodal-inc.net
+  rules:
+  - host: {YOUR_NAMESPACE}-pygeoapi.glodal-inc.net
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: pygeoapi
+            port:
+              number: 80
