@@ -114,6 +114,12 @@ For operational purposes, consider deploying pygeoapi on AWS using one of the fo
 1. **Docker on an EC2 instance** – Quick and easy, but not scalable. Performance may degrade with many simultaneous requests.
 2. **Amazon Elastic Kubernetes Service (EKS)** – A managed Kubernetes service on AWS offering flexible and scalable resource management.
 
+## Fix issues of datasets in https://pygeoapi.glodal-inc.net/
+
+The pygeoapi uses [国土数値情報](https://nlftp.mlit.go.jp/ksj/), but some dataset imports are failed due to irregulary formated metadata.
+
+As well, we should consider [国土交通データプラットフォーム](https://www.mlit-data.jp/) and [Plateau](https://www.mlit.go.jp/plateau/) for importing datasets to pygeoapi.
+
 ## Explore additional OGC APIs
 
 In this tutorial, we focused on the **Features API**.
